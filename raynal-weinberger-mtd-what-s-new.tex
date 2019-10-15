@@ -1,0 +1,56 @@
+\documentclass[aspectratio=169,obeyspaces,spaces,hyphens,dvipsnames]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}% http://ctan.org/pkg/lm
+\usepackage{minted}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepackage[normalem]{ulem}
+\usepackage{textcomp}
+\usepackage{media9}
+
+\mode<presentation>
+\usetheme{Bootlin}
+
+\def\signed #1{{\leavevmode\unskip\nobreak\hfil\penalty50\hskip2em
+  \hbox{}\nobreak\hfil(#1)
+  \parfillskip=0pt \finalhyphendemerits=0 \endgraf}}
+
+\newsavebox\mybox
+\newenvironment{aquote}[1]
+  {\savebox\mybox{#1}\begin{quotation}}
+  {\signed{\usebox\mybox}\end{quotation}}
+
+\title{MTD: What's new?}
+\conference{Embedded Linux Conference Europe, October 2019}
+\authors{Miquèl Raynal \hfill Richard Weinberger}
+\email{miquel@bootlin.com \hfill richard@nod.at}
+\institute{Bootlin \hfill Sigma-star GmbH}
+\slidesurl{https://bootlin.com/pub/conferences/2019/elce/raynal-weinberger-mtd-what-s-new}
+
+\begin{document}
+
+\addtocontents{toc}{\protect\setcounter{tocdepth}{-1}}
+\section{MTD: What's new?}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
+
+\subsection{MTD}
+
+\begin{frame}
+  \centering
+  \Huge
+  Questions? Suggestions? Comments?\\
+  \vspace{0.5cm}
+  \huge
+  Miquèl Raynal \& Richard Weinberger\\
+  \large
+  \vspace{0.5cm}
+  \hspace{2.6cm}\code{miquel@bootlin.com} and \code{richard@nod.at}
+  \vspace{0.5cm}
+  \newline Slides under CC-BY-SA 3.0\\
+  \scriptsize
+  \url{https://bootlin.com/pub/conferences/2019/elce/raynal-weinberger-what-s-new}
+\end{frame}
+
+\end{document}
