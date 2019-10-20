@@ -37,6 +37,141 @@
 
 \subsection{MTD}
 
+\begin{frame}{Administration}
+  \begin{itemize}
+  \item Lot of changes in the maintainers team
+    \begin{itemize}
+    \item - Boris (MTD/NAND), David (MTD), Brian (MTD), Adrian
+      (UBIFS), Artem (UBI/UBIFS), Marek (MTD), Cyrille (SPI-NOR)
+    \item + Tudor (SPI-NOR), Vignesh (MTD/Hyperbus), Frieder (MTD),
+      Miquèl (MTD/NAND)
+    \item Richard (MTD/NAND/UBI/UBIFS) as a pillar
+    \end{itemize}
+  \item Migration to a kernel.org repository:\\
+    \sout{\code{https://git.infradead.org/linux-mtd.git}}\\
+    \code{https://git.kernel.org/pub/scm/linux/kernel/git/mtd/linux.git}\\
+    \begin{itemize}
+    \item mtd/fixes
+    \item mtd/next (MTD + parallel NORs + Hyperbus)
+    \item nand/next (all NAND flavors)
+    \item spi-nor/next (SPI-NORs only)
+    \end{itemize}
+  \item UBI/UBIFS development is still on an infradead repository:\\
+    \code{https://git.infradead.org/ubifs-2.6.git}\\
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{NAND: Fat cleanup}
+  \begin{itemize}
+  \item Creation of a raw/ subdirectory
+  \item Move of Onenand into the nand/ subdirectory
+  \item Make a distinction between the controller and the flash chip on
+    the other side of the bus!
+  \item Code reorganization (internals, ONFI, JEDEC)
+  \item Deprecation of several hooks, creation of a legacy structure
+  \item No more MTD objects in the NAND world
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{NAND: Generic NAND layer}
+  \begin{itemize}
+  \item Common to all flavors of NAND chips
+  \item TODO: find examples
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{NAND: ->exec\_op()}
+  \begin{itemize}
+  \item Deprecating ->cmdfunc(), ->cmd\_ctrl(), ->select\_*() hooks
+  \item TODO: take slides from previous confs
+  \item Replacing them with ->exec\_op()
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{NAND: Supporting more and more hardware}
+  \begin{itemize}
+  \item Raw NANDs should have died by now
+  \item New controllers (or IP flavors):
+    \begin{itemize}
+    \item MTK, Tegra, STM32 FMC2, Amlogic, Brcmnand, Macronix
+    \end{itemize}
+  \item Cleaned, updated, migrated to use the new hooks:
+    \begin{itemize}
+    \item Marvell, OMAP2, Sunxi, GPMI, Qualcomm, Denali, VF610, FSMC, Ams-Delta
+    \end{itemize}
+  \item Not dead enough from my point of view :)
+  \item What does my crystal ball says?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{NAND: SPI memories 1/2}
+  \begin{itemize}
+  \item Introduction of the SPI-mem layer
+  \item TODO: more details
+  \item SPI-NAND framework build on top of that
+  \item TOO: take old slides
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{NAND: SPI memories 2/2}
+  \begin{itemize}
+  \item Staging SPI-NAND driver removed
+  \item Plenty of new chips already supported, keeps increasing!
+    \begin{itemize}
+    \item Winbod, Gigadevices, Toshiba, Micron, Macronix, Paragon
+    \end{itemize}
+  \item Very active field, could replace raw memories in the near future
+    due to the parallelization of data sampling (dual-spi, quad-spi,
+    octo-spi) abstracted by the TODO layer.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{NAND: SPI memories 2/2}
+  \begin{itemize}
+  \item Staging SPI-NAND driver removed
+  \item Plenty of new chips already supported, keeps increasing!
+    \begin{itemize}
+    \item Winbod, Gigadevices, Toshiba, Micron, Macronix, Paragon
+    \end{itemize}
+  \item Very active field, could replace raw memories in the near future
+    due to the parallelization of data sampling (dual-spi, quad-spi,
+    octo-spi) abstracted by the TODO layer.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{NAND: A journey supporting Micron's hardware}
+  \begin{itemize}
+  \item Aka: why we tend not to have full trust with hardware
+    manufacturer?
+  \item TODO
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{SPI-NOR}
+\end{frame}
+
+\begin{frame}{Hyperbus}
+\end{frame}
+
+\begin{frame}{UBI}
+\end{frame}
+
+\begin{frame}{UBIFS}
+\end{frame}
+
+\begin{frame}{What next?}
+  \begin{itemize}
+  \item External ECC engines <3
+  \item MLC NAND support (at least SLC mode?)
+  \item DMA-able buffers
+  \item ONFI for SPI-NANDs? Maybe not
+  \item In my dreams: an MTD I/O scheduler, parallelized accesses
+    \begin{itemize}
+    \item Running upstream Linux in SSDs?
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
 \begin{frame}
   \centering
   \Huge
