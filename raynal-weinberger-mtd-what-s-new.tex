@@ -32,63 +32,238 @@
 \begin{document}
 
 \addtocontents{toc}{\protect\setcounter{tocdepth}{-1}}
-\section{MTD: What's new?}
+\section{Memory Technology Devinces: what's new?}
 \addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
 
-\subsection{MTD}
+\newcommand\added{\item[$+$]}
+\newcommand\removed{\item[$-$]}
+\newcommand\surviving{\item[$\bullet$]}
+
+\begin{frame}{What exactly are we talking about?}
+  \begin{center}
+    \includegraphics[scale=0.13]{mtd-stack.pdf}
+  \end{center}
+\end{frame}
 
 \begin{frame}{Administration}
   \begin{itemize}
-  \item Lot of changes in the maintainers team
-    \begin{itemize}
-    \item - Boris (MTD/NAND), David (MTD), Brian (MTD), Adrian
-      (UBIFS), Artem (UBI/UBIFS), Marek (MTD), Cyrille (SPI-NOR)
-    \item + Tudor (SPI-NOR), Vignesh (MTD/Hyperbus), Frieder (MTD),
-      Miquèl (MTD/NAND)
-    \item Richard (MTD/NAND/UBI/UBIFS) as a pillar
-    \end{itemize}
+  \item Lot's of changes in the maintainers team
+    \begin{columns}
+      \column{0.5\textwidth}
+      \begin{itemize}
+        \removed Adrian (UBIFS)
+        \removed Artem (UBI/UBIFS)
+        \removed Boris (MTD/NAND)
+        \removed Brian (MTD)
+        \removed Cyrille (SPI-NOR)
+        \removed David (MTD)
+        \removed Marek (MTD)
+      \end{itemize}
+      \column{0.5\textwidth}
+      \begin{itemize}
+        \surviving Richard (MTD/NAND/UBI/UBIFS), aka the pillar
+        \added Frieder (MTD)
+        \added Miquèl (MTD/NAND)
+        \added Tudor (SPI-NOR)
+        \added Vignesh (MTD/HyperBus)
+      \end{itemize}
+    \end{columns}
+  \end{itemize}
+\end{frame}
+
+\subsection{MTD layer}
+
+\begin{frame}{Where is the latest code?}
+  \begin{itemize}
   \item Migration to a kernel.org repository:\\
     \sout{\code{https://git.infradead.org/linux-mtd.git}}\\
     \code{https://git.kernel.org/pub/scm/linux/kernel/git/mtd/linux.git}\\
     \begin{itemize}
-    \item mtd/fixes
-    \item mtd/next (MTD + parallel NORs + Hyperbus)
+    \item mtd/fixes (all fixes)
+    \item mtd/next (MTD + parallel NORs + HyperBus)
     \item nand/next (all NAND flavors)
     \item spi-nor/next (SPI-NORs only)
     \end{itemize}
-  \item UBI/UBIFS development is still on an infradead repository:\\
+    \vfill
+  \item UBI/UBIFS development is still going on an infradead repository:\\
     \code{https://git.infradead.org/ubifs-2.6.git}\\
   \end{itemize}
 \end{frame}
 
-\begin{frame}{NAND: Fat cleanup}
-  \begin{itemize}
-  \item Creation of a raw/ subdirectory
-  \item Move of Onenand into the nand/ subdirectory
-  \item Make a distinction between the controller and the flash chip on
-    the other side of the bus!
-  \item Code reorganization (internals, ONFI, JEDEC)
-  \item Deprecation of several hooks, creation of a legacy structure
-  \item No more MTD objects in the NAND world
-  \end{itemize}
+\subsection{Flash type layers}
+
+\begin{frame}{NAND: Keep it tidy!}
+  \begin{columns}
+    \column{0.6\textwidth}
+    \begin{itemize}
+    \item \code{mv items/ where-they-belong/}
+      \begin{itemize}
+      \item Creation of a \code{raw/} subdirectory
+      \item Onenand drivers moved into the \code{nand/} subdirectory
+      \item Code reorganization:
+        \begin{itemize}
+        \item timings
+        \item internals
+        \item ONFI
+        \item JEDEC
+        \item ...
+        \end{itemize}
+      \end{itemize}
+    \end{itemize}
+    \column{0.4\textwidth}
+    \begin{center}
+      \includegraphics[scale=0.35]{dishes-in-sink-meme.jpg}
+                      {\fontsize{5}{6}\selectfont Random meme from the
+                        Internet with Liam Neeson on it}
+    \end{center}
+  \end{columns}
 \end{frame}
 
 \begin{frame}{NAND: Generic NAND layer}
   \begin{itemize}
   \item Common to all flavors of NAND chips
-  \item TODO: find examples
+  \item Abstracts the type of bus (ops)
+  \item Describes the memory organization
+    \begin{itemize}
+      \begin{columns}
+        \column{0.1\textwidth}
+        \column{0.25\textwidth}
+      \item targets
+      \item luns
+        \column{0.25\textwidth}
+      \item planes
+      \item eraseblocks
+        \column{0.25\textwidth}
+      \item pages
+      \item ...
+      \end{columns}
+    \end{itemize}
+    \vfill
+  \item Shape the I/O requests
+    \begin{itemize}
+      \begin{columns}
+        \column{0.1\textwidth}
+        \column{0.25\textwidth}
+      \item in-band data offset
+      \item in-band data length
+        \column{0.25\textwidth}
+      \item out-of-band data offset
+      \item out-of-band data length
+        \column{0.25\textwidth}
+      \item buffers
+      \item ...
+      \end{columns}
+      \end{itemize}
+    \vfill
+  \item Share Bad Block Table handling and Bad Blocks logic
+    \begin{itemize}
+      \begin{columns}
+        \column{0.1\textwidth}
+        \column{0.25\textwidth}
+      \item init
+      \item cleanup
+        \column{0.25\textwidth}
+      \item read
+      \item update
+        \column{0.25\textwidth}
+      \end{columns}
+      \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{NAND: ->exec\_op()}
+\begin{frame}{Raw NAND: Jumbo cleanup 1/2}
   \begin{itemize}
-  \item Deprecating ->cmdfunc(), ->cmd\_ctrl(), ->select\_*() hooks
-  \item TODO: take slides from previous confs
-  \item Replacing them with ->exec\_op()
+  \item Make a distinction between the controller and the flash chip
+  \end{itemize}
+  \vfill
+  \begin{columns}
+    \column{0.7\textwidth}
+    \begin{center}
+      \includegraphics[scale=0.35]{rawnand-interface.pdf}
+    \end{center}
+    \column{0.3\textwidth}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Raw NAND: Jumbo cleanup 2/2}
+  \begin{itemize}
+  \item Deprecation of several hooks, creation of a legacy structure
+    \begin{block}{}
+\begin{verbatim}
+drivers/mtd/nand/raw/nand_base.c   | 618 +-------------------------
+drivers/mtd/nand/raw/nand_legacy.c | 642 ++++++++++++++++++++++++++++
+\end{verbatim}
+    \end{block}
+  \item No more MTD objects in the NAND world
+    \begin{block}{}
+\begin{verbatim}
+- * @mtd: MTD device structure
++ * @chip: NAND chip object
+[...]
+-static int nand_block_markbad_lowlevel(struct mtd_info *mtd, ...)
++static int nand_block_markbad_lowlevel(struct nand_chip *chip, ...)
+ {
+-       struct nand_chip *chip = mtd_to_nand(mtd);
++       struct mtd_info *mtd = nand_to_mtd(chip);
+\end{verbatim}
+    \end{block}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{NAND: Supporting more and more hardware}
+\begin{frame}{Raw NAND: {\bf\code{->exec_op()}}: origins}
+  \begin{center}
+    \includegraphics[scale=0.4]{rawnand-protocol-before.pdf}
+  \end{center}
+  \vfill
+  \begin{columns}
+    \column{0.5\textwidth}
+    \begin{itemize}
+    \item Controllers can usually handle more complex/higher-level
+      operations (sometimes they cannot even send a single cycle)
+    \item The API is incomplete
+    \end{itemize}
+    \column{0.5\textwidth}
+    \begin{itemize}
+    \item Workaround for driver developpers: overload
+      \code{->cmdfunc()}\\ $\rightarrow$ re-implementing everything?
+      \begin{itemize}
+      \item Hard to maintain
+      \item Incomplete implementations
+      \end{itemize}
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Raw NAND: {\bf\code{->exec_op()}}: one hook to rule
+      them all}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \begin{itemize}
+    \item Asks to execute the whole operation
+    \item Just a translation in NAND operations of the MTD layer orders
+    \item An array of instructions is passed
+    \end{itemize}
+    \column{0.5\textwidth}
+    \begin{itemize}
+    \item The controller's implementation will parse the sequence, split
+      it in as much sub-operations as needed/supported and execute
+    \end{itemize}
+  \end{columns}
+  \vfill
+  \begin{center}
+    \includegraphics[scale=0.4]{rawnand-protocol-execop.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Playtime: A journey supporting Micron's hardware}
+  \begin{itemize}
+  \item Aka: why we tend to not have full trust with hardware
+    manufacturers?
+  \item TODO
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Raw NAND: Supporting more and more hardware}
   \begin{itemize}
   \item Raw NANDs should have died by now
   \item New controllers (or IP flavors):
@@ -99,59 +274,124 @@
     \begin{itemize}
     \item Marvell, OMAP2, Sunxi, GPMI, Qualcomm, Denali, VF610, FSMC, Ams-Delta
     \end{itemize}
-  \item Not dead enough from my point of view :)
-  \item What does my crystal ball says?
+  \end{itemize}
+  \vfill
+  \begin{columns}
+    \column{0.3\textwidth}
+    \begin{center}
+      \includegraphics[scale=0.5]{crystal-ball.jpg}
+    \end{center}
+    \column{0.7\textwidth}
+    \begin{itemize}
+    \item Not dead enough from my perspective :)
+    \item What does my crystal ball says? % SPI memories \o/
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{SPI memories}
+  \begin{itemize}
+  \item SPI controllers are memory agnostic
+  \item Introduction of the \code{spi-mem} layer
+  \item Standardizes how to communicate with a device
+  \end{itemize}
+  \vfill
+  \includegraphics[scale=0.3]{spi-mem-protocol.pdf}
+  \vfill
+  \begin{itemize}
+  \item Command set is device specific (2 known at this time)
+  \item Supports direct-mapping!
+  \item Generic SPI controller drivers can implement the
+    \code{spi_mem_ops} interface
   \end{itemize}
 \end{frame}
 
-\begin{frame}{NAND: SPI memories 1/2}
+\begin{frame}{SPI-NAND}
   \begin{itemize}
-  \item Introduction of the SPI-mem layer
-  \item TODO: more details
-  \item SPI-NAND framework build on top of that
-  \item TOO: take old slides
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{NAND: SPI memories 2/2}
-  \begin{itemize}
-  \item Staging SPI-NAND driver removed
+  \item Introduction of a real SPI-NAND framework, built on top of
+    \code{spi-mem}
+  \item Similarly to \code{->exec_op()}, translates the upper layer
+    I/O requests into SPI cycles thanks to the \code{spi-mem} abstraction
+    layer
+    \vfill
+  \item Very active field, could replace raw memories in the near future
+    due to the parallelisation of data sampling (dual-spi, quad-spi,
+    octo-spi) abstracted by the \code{spi-mem} layer.
   \item Plenty of new chips already supported, keeps increasing!
     \begin{itemize}
     \item Winbod, Gigadevices, Toshiba, Micron, Macronix, Paragon
     \end{itemize}
-  \item Very active field, could replace raw memories in the near future
-    due to the parallelization of data sampling (dual-spi, quad-spi,
-    octo-spi) abstracted by the TODO layer.
+    \vfill
+  \item Staging \code{mt29f_spinand} driver removed
   \end{itemize}
 \end{frame}
 
-\begin{frame}{NAND: SPI memories 2/2}
+\begin{frame}{SPI-NOR: Fit the {\bf\code{spi-mem}} layer}
   \begin{itemize}
-  \item Staging SPI-NAND driver removed
-  \item Plenty of new chips already supported, keeps increasing!
+  \item Much older than the SPI-NAND framework
+    \vfill
+  \begin{columns}
+    \column{0.11\textwidth}
+    \column{0.5\textwidth}
+    \item Re-worked to fit the \code{spi-mem} approach
+      \begin{itemize}
+      \item Temporary use of the m28p80 driver as intermediate layer
+        between SPI-NOR and \code{spi-mem}
+      \item Structural changes to move generic code to the SPI-NOR
+        (\code{spi-nor.c}) layer
+      \item Get rid of manufacturer specific code in the generic bits
+      \end{itemize}
+      \column{0.5\textwidth}
+      \begin{center}
+    \includegraphics[scale=0.12]{spi-mem-stack.pdf}
+      \end{center}
+  \end{columns}
+  \vfill
+  \item Goal is to get rid of the SPI-NOR controller drivers entirely
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{SPI-NOR: Improvements}
+  \begin{itemize}
+  \item DMA'able buffers mandatory now (assumed by the \code{spi-mem}
+    layer)
+    \vfill
+  \item Lock/unlock logic reworked
+    \vfill
+  \item Notable new features:
     \begin{itemize}
-    \item Winbod, Gigadevices, Toshiba, Micron, Macronix, Paragon
+    \item System power management support
+    \item Non-uniform erase size
+    \item JEDEC SFDP 4-byte Address Instruction Table parser
+    \item Octal mode
+    \item \code{->default_init()} and \code{->post_sfdp()} hooks to
+      tweak the flash parameters
+    \item ...
     \end{itemize}
-  \item Very active field, could replace raw memories in the near future
-    due to the parallelization of data sampling (dual-spi, quad-spi,
-    octo-spi) abstracted by the TODO layer.
   \end{itemize}
 \end{frame}
 
-\begin{frame}{NAND: A journey supporting Micron's hardware}
+\begin{frame}{HyperBus framework}
   \begin{itemize}
-  \item Aka: why we tend not to have full trust with hardware
-    manufacturer?
-  \item TODO
+  \item 29/10/2019 @ Lyon: Vignesh talk about HyperBus support in Linux
+    \vfill
+  \item Physically similar to Octo-SPI
+  \item Double data rate
+  \item Part of xSPI standard JEDEC 251 (standardizes all SPI-NOR
+    flashes)
+  \item Different protocol than what traditional SPI NOR chips use
+    \vfill
+  \item HyperFlash
+    \begin{itemize}
+    \item NOR based memory with HyberBus interface
+    \item Follows CFI Parallel NOR command set\\
+      \code{drivers/mtd/chips/cfi_cmdset_0002.c}
+    \item Command set encapsulated by the HyperBus protocol
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{SPI-NOR}
-\end{frame}
-
-\begin{frame}{Hyperbus}
-\end{frame}
+\subsection{Wear leveling and file-system layers}
 
 \begin{frame}{UBI}
 \end{frame}
@@ -160,16 +400,40 @@
 \end{frame}
 
 \begin{frame}{What next?}
-  \begin{itemize}
-  \item External ECC engines <3
-  \item MLC NAND support (at least SLC mode?)
-  \item DMA-able buffers
-  \item ONFI for SPI-NANDs? Maybe not
-  \item In my dreams: an MTD I/O scheduler, parallelized accesses
+  \begin{columns}
+    \column{0.6\textwidth}
     \begin{itemize}
-    \item Running upstream Linux in SSDs?
+    \item Definitely coming
+      \begin{itemize}
+      \item NAND
+        \begin{itemize}
+        \item External ECC engines
+        \item MLC support (at least in SLC mode?)
+        \end{itemize}
+      \item HyperBus
+        \begin{itemize}
+        \item HyperRAM support
+        \item Use of spi-mem layer
+        \end{itemize}
+      \end{itemize}
+      \vfill
+    \item Keep on dreaming
+      \begin{itemize}
+      \item ONFI for SPI-NANDs? Maybe, maybe not
+      \item DMA-able buffers everywhere in MTD\\ (implies new I/O requests
+        structures)
+      \item An MTD I/O scheduler, parallelized access
+        \begin{itemize}
+        \item Running upstream Linux in SSDs?
+        \end{itemize}
+      \end{itemize}
     \end{itemize}
-  \end{itemize}
+    \column{0.5\textwidth}
+    \begin{center}
+      \includegraphics[scale=0.30]{plan.jpg}
+      % Screenshot of a scene of the Joker movie
+    \end{center}
+  \end{columns}
 \end{frame}
 
 \begin{frame}

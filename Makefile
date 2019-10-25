@@ -1,6 +1,12 @@
 PICTURES = \
 	common/logo-penguins.pdf \
-	common/bootlin-logo.pdf
+	common/bootlin-logo.pdf \
+	mtd-stack.pdf \
+	rawnand-interface.pdf \
+	rawnand-protocol-before.pdf \
+	rawnand-protocol-execop.pdf \
+	spi-mem-protocol.pdf \
+	spi-mem-stack.pdf
 
 all: $(PICTURES)
 	$(PDFLATEX_ENV) pdflatex -shell-escape raynal-weinberger-mtd-what-s-new.tex
