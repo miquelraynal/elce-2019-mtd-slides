@@ -255,11 +255,69 @@ drivers/mtd/nand/raw/nand_legacy.c | 642 ++++++++++++++++++++++++++++
   \end{center}
 \end{frame}
 
-\begin{frame}{Playtime: A journey supporting Micron's hardware}
+\begin{frame}{Raw NAND: A journey supporting Micron's hardware 1/3}
   \begin{itemize}
   \item Aka: why we tend to not have full trust with hardware
     manufacturers?
-  \item TODO
+  \item [Plot] What is the on-die ECC engine capability of a Micron
+    NAND chip, between: unsupported, supported and mandatory?
+    \onslide<2->
+  \item [Solution] Discover these information statically: build an
+    ID $\leftrightarrow$ capabilities table.
+    \onslide<3->
+  \item [Issue 1] It seems that Micron produces many chips with the
+    same ID and blow internal fuses to prevent the advertisement and the
+    use of on-die ECC on outgoing products depending if their on-die ECC
+    tests passed or not. So only the ID, as-is, is unusable.
+    \onslide<4->
+  \item [Fix 1] Discover these information dynamically: enable the
+    engine with \code{->set_features()} then read back the ECC engine
+    status with \code{->get_features()}. With this information we know
+    if the engine is supported. Disable it with
+    \code{->set_features()}. If \code{->get_features()} report the
+    engine is still on, on-die ECC is mandatory.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Raw NAND: A journey supporting Micron's hardware 2/3}
+  \begin{itemize}
+  \item [Issue 2] Hardware bug: on certain chips where on-die ECC is
+    supposedly mandatory, \code{->get_features()} returns that it is
+    disabled.
+    \onslide<2->
+  \item [Fix 2] Use the \code{ECC_STATUS} bit of the 5th ID byte
+    as discriminant, our observations shows that it is dynamically
+    changed and it reflects what \code{->get_features()} fails to
+    retrieve.
+    \onslide<3->
+  \item [Issue 3] Hardware bug: has explained above, a chip without
+    on-die ECC does not mean there is no ECC engine on it, it means it
+    is at least unavailable. But, there are buggy chips where enabling
+    the engine with a \code{->set_feature()} will work despite the fact
+    that the engine is not supposed to be available and will probably
+    not work reliably!
+    \onslide<4->
+  \item [Fix 3] Let's check {\bf first} the \code{ECC_STATUS} bit, and
+    activate the engine only if the default state reflects an available
+    engine. The engine will still be activated and deactivated if it
+    appears to be present and usable, in order to know if it is
+    mandatory.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Raw NAND: A journey supporting Micron's hardware 3/3}
+  \begin{itemize}
+  \item [Issue 4] Hardware bug: we found chips that do not update the
+    \code{ECC_STATUS} bit when the engine is enabled.
+    \onslide<2->
+  \item [Fix 4] Micron advises to rely on \code{->get_features()}. Oh,
+    wait...
+    \begin{center}
+      \includegraphics[scale=0.25]{baby-confused.jpg}
+    \end{center}
+    \onslide<3->
+  \item Back to endless part number tables. Maybe they did mess that
+    too?
   \end{itemize}
 \end{frame}
 
