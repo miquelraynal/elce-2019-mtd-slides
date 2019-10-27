@@ -514,7 +514,29 @@ drivers/mtd/nand/raw/nand_legacy.c | 642 ++++++++++++++++++++++++++++
   \end{itemize}
 \end{frame}
 
-\begin{frame}{UBIFS}
+\begin{frame}{UBIFS: fstests}
+  \begin{itemize}
+   \item fstests (former xfstests) can now test UBIFS
+   \item Useful for regression testing
+   \item Some tests can fail, e.g. atime tests
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UBIFS: Authentication}
+  \begin{itemize}
+   \item Beside of encryption you also want your data authentificated
+   \item UBIFS authentication can be combined with encryption
+   \item UBIFS encryption via fscrypt covers only user data
+   \item UBIFS authentication covers user and meta data
+   \item e.g. switching inodes of \code{/bin/login} and \code{/bin/true} will be detected
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UBIFS: Bug fixes}
+  \begin{itemize}
+   \item xattrs saw major rework
+   \item \code{O_TMPFILE} needed multiple fixes, sadly
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{What next?}
