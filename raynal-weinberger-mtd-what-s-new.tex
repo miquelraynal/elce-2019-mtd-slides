@@ -461,7 +461,57 @@ drivers/mtd/nand/raw/nand_legacy.c | 642 ++++++++++++++++++++++++++++
 
 \subsection{Wear leveling and file-system layers}
 
-\begin{frame}{UBI}
+\begin{frame}{UBI: Dealing with read disturb}
+  \begin{itemize}
+     \item Reading the same page over and over can corrupt nearby pages
+     \item Big issue on MLC NAND but also possible on SLC NAND
+     \item Problem: Seldom read pages might corrupt faster than you can fix them
+   \end{itemize}
+\end{frame}
+
+\begin{frame}{UBI: Dealing with read disturb}
+  \begin{itemize}
+     \item Old solution: Read whole NAND once in a while
+     \item \ldots reading on what layer?
+     \item UBI does wear leveling for us, so we need to read at UBI level
+     \item Once a week: \code{dd if=/dev/ubiX_Y of=/dev/null}
+     \item Done?
+   \end{itemize}
+\end{frame}
+
+\begin{frame}{UBI: Dealing with read disturb}
+  \begin{itemize}
+    \item Problem 1: Hurts performance
+    \item Problem 2: Will only catch pages with UBI user data, no meta data
+    \item Solution for problem 2: Reboot also once in a while
+    \item Upon UBI attach UBI reads all meta data and can detect errors
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UBI: Dealing with read disturb}
+  \begin{itemize}
+    \item Fastmap makes things interesting, as always
+    \item At attach time most meta data is not read
+    \item UBI meta data can bitrot and corrupt badly
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UBI: Bitrot interface}
+  \begin{itemize}
+   \item Simple UBI ioctl interface to userspace
+   \item Allows userspace to initiate checks
+   \item PEBs can be in many different state, userspace has to restart checks
+   \item Simple but handy userspace daemon: ubihealthd
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UBI: ubihealthd}
+  \begin{itemize}
+   \item Part of mtd-utils package
+   \item Stateless, no config file, no state file needed
+   \item Shuffles list of PEBs and checks every block one by one
+   \item One PEB per 120 seconds, default value
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{UBIFS}
