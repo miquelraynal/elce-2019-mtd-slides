@@ -95,8 +95,8 @@
   \item MTD supports panic write since ever
   \item Useful to dump kernel crashes to flash
   \item During panic we must not do complex stuff
-  \item Before v5.3 driver had no detect panic write
-  \item Now drivers can check \code{oops_panic_write}
+  \item Before v5.3 drivers had no way to detect panic write
+  \item Now drivers can new check \code{oops_panic_write}
   \end{itemize}
 \end{frame}
 
