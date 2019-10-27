@@ -85,8 +85,18 @@
     \item spi-nor/next (SPI-NORs only)
     \end{itemize}
     \vfill
-  \item UBI/UBIFS development is still going on an infradead repository:\\
-    \code{https://git.infradead.org/ubifs-2.6.git}\\
+  \item UBI/UBIFS development is now also on kernel.org:\\
+    \code{https://git.kernel.org/pub/scm/linux/kernel/git/rw/ubifs.git}\\
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{panic write flag}
+  \begin{itemize}
+  \item MTD supports panic write since ever
+  \item Useful to dump kernel crashes to flash
+  \item During panic we must not do complex stuff
+  \item Before v5.3 driver had no detect panic write
+  \item Now drivers can check \code{oops_panic_write}
   \end{itemize}
 \end{frame}
 
