@@ -297,21 +297,20 @@ drivers/mtd/nand/raw/nand_legacy.c | 642 ++++++++++++++++++++++++++++
 
 \begin{frame}{Raw NAND: A journey supporting Micron's hardware 2/3}
   \begin{itemize}
-  \item [Issue 2] Hardware bug: on certain chips where on-die ECC is
-    supposedly mandatory, \code{->get_features()} returns that it is
-    disabled.
+  \item [Issue 2] On certain chips where on-die ECC is supposedly
+    mandatory, \code{->get_features()} returns that it is disabled.
     \onslide<2->
   \item [Fix 2] Use the \code{ECC_STATUS} bit of the 5th ID byte
     as discriminant, our observations shows that it is dynamically
     changed and it reflects what \code{->get_features()} fails to
     retrieve.
     \onslide<3->
-  \item [Issue 3] Hardware bug: has explained above, a chip without
-    on-die ECC does not mean there is no ECC engine on it, it means it
-    is at least unavailable. But, there are buggy chips where enabling
-    the engine with a \code{->set_feature()} will work despite the fact
-    that the engine is not supposed to be available and will probably
-    not work reliably!
+  \item [Issue 3] Has explained above, a chip without on-die ECC does
+    not mean there is no ECC engine on it, it means it is at least
+    unavailable. But, there are buggy chips where enabling the engine
+    with a \code{->set_feature()} will work despite the fact that the
+    engine is not supposed to be available and will probably not work
+    reliably!
     \onslide<4->
   \item [Fix 3] Let's check {\bf first} the \code{ECC_STATUS} bit, and
     activate the engine only if the default state reflects an available
@@ -323,7 +322,7 @@ drivers/mtd/nand/raw/nand_legacy.c | 642 ++++++++++++++++++++++++++++
 
 \begin{frame}{Raw NAND: A journey supporting Micron's hardware 3/3}
   \begin{itemize}
-  \item [Issue 4] Hardware bug: we found chips that do not update the
+  \item [Issue 4] We found chips that do not update the
     \code{ECC_STATUS} bit when the engine is enabled.
     \onslide<2->
   \item [Fix 4] Micron advises to rely on \code{->get_features()}. Oh,
