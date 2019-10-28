@@ -25,8 +25,8 @@
 \title{MTD: What's new?}
 \conference{Embedded Linux Conference Europe, October 2019}
 \authors{Miquèl Raynal \hfill Richard Weinberger}
-\email{miquel@bootlin.com \hfill richard@nod.at}
-\institute{Bootlin \hfill Sigma-star GmbH}
+\email{miquel@bootlin.com \hfill richard@sigma-star.at}
+\institute{Bootlin \hfill sigma star gmbh}
 \slidesurl{https://bootlin.com/pub/conferences/2019/elce/raynal-weinberger-mtd-what-s-new}
 
 \begin{document}
@@ -61,7 +61,7 @@
       \end{itemize}
       \column{0.5\textwidth}
       \begin{itemize}
-        \surviving Richard (MTD/NAND/UBI/UBIFS), aka the pillar
+        \surviving Richard (MTD/NAND/UBI/UBIFS/JFFS2), aka the pillar
         \added Frieder (MTD)
         \added Miquèl (MTD/NAND)
         \added Tudor (SPI-NOR)
@@ -85,8 +85,18 @@
     \item spi-nor/next (SPI-NORs only)
     \end{itemize}
     \vfill
-  \item UBI/UBIFS development is still going on an infradead repository:\\
-    \code{https://git.infradead.org/ubifs-2.6.git}\\
+  \item UBI/UBIFS development is now also on kernel.org:\\
+    \code{https://git.kernel.org/pub/scm/linux/kernel/git/rw/ubifs.git}\\
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{panic write flag}
+  \begin{itemize}
+  \item MTD supports panic write since ever
+  \item Useful to dump kernel crashes to flash
+  \item During panic we must not do complex stuff
+  \item Before v5.3 drivers had no way to detect panic write
+  \item Now drivers can new check \code{oops_panic_write}
   \end{itemize}
 \end{frame}
 
@@ -451,10 +461,82 @@ drivers/mtd/nand/raw/nand_legacy.c | 642 ++++++++++++++++++++++++++++
 
 \subsection{Wear leveling and file-system layers}
 
-\begin{frame}{UBI}
+\begin{frame}{UBI: Dealing with read disturb}
+  \begin{itemize}
+     \item Reading the same page over and over can corrupt nearby pages
+     \item Big issue on MLC NAND but also possible on SLC NAND
+     \item Problem: Seldom read pages might corrupt faster than you can fix them
+   \end{itemize}
 \end{frame}
 
-\begin{frame}{UBIFS}
+\begin{frame}{UBI: Dealing with read disturb}
+  \begin{itemize}
+     \item Old solution: Read whole NAND once in a while
+     \item \ldots reading on what layer?
+     \item UBI does wear leveling for us, so we need to read at UBI level
+     \item Once a week: \code{dd if=/dev/ubiX_Y of=/dev/null}
+     \item Done?
+   \end{itemize}
+\end{frame}
+
+\begin{frame}{UBI: Dealing with read disturb}
+  \begin{itemize}
+    \item Problem 1: Hurts performance
+    \item Problem 2: Will only catch pages with UBI user data, no meta data
+    \item Solution for problem 2: Reboot also once in a while
+    \item Upon UBI attach UBI reads all meta data and can detect errors
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UBI: Dealing with read disturb}
+  \begin{itemize}
+    \item Fastmap makes things interesting, as always
+    \item At attach time most meta data is not read
+    \item UBI meta data can bitrot and corrupt badly
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UBI: Bitrot interface}
+  \begin{itemize}
+   \item Simple UBI ioctl interface to userspace
+   \item Allows userspace to initiate checks
+   \item PEBs can be in many different state, userspace has to restart checks
+   \item Simple but handy userspace daemon: ubihealthd
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UBI: ubihealthd}
+  \begin{itemize}
+   \item Part of mtd-utils package
+   \item Stateless, no config file, no state file needed
+   \item Shuffles list of PEBs and checks every block one by one
+   \item One PEB per 120 seconds, default value
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UBIFS: fstests}
+  \begin{itemize}
+   \item fstests (former xfstests) can now test UBIFS
+   \item Useful for regression testing
+   \item Some tests can fail, e.g. atime tests
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UBIFS: Authentication}
+  \begin{itemize}
+   \item Beside of encryption you also want your data authentificated
+   \item UBIFS authentication can be combined with encryption
+   \item UBIFS encryption via fscrypt covers only user data
+   \item UBIFS authentication covers user and meta data
+   \item e.g. switching inodes of \code{/bin/login} and \code{/bin/true} will be detected
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UBIFS: Bug fixes}
+  \begin{itemize}
+   \item xattrs saw major rework
+   \item \code{O_TMPFILE} needed multiple fixes, sadly
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{What next?}
@@ -466,7 +548,7 @@ drivers/mtd/nand/raw/nand_legacy.c | 642 ++++++++++++++++++++++++++++
       \item NAND
         \begin{itemize}
         \item External ECC engines
-        \item MLC support (at least in SLC mode?)
+        \item MLC support (in pseudo SLC mode)
         \end{itemize}
       \item HyperBus
         \begin{itemize}
@@ -503,7 +585,7 @@ drivers/mtd/nand/raw/nand_legacy.c | 642 ++++++++++++++++++++++++++++
   Miquèl Raynal \& Richard Weinberger\\
   \large
   \vspace{0.5cm}
-  \hspace{2.6cm}\code{miquel@bootlin.com} and \code{richard@nod.at}
+  \hspace{2.6cm}\code{miquel@bootlin.com} and \code{richard@sigma-star.at}
   \vspace{0.5cm}
   \newline Slides under CC-BY-SA 3.0\\
   \scriptsize
